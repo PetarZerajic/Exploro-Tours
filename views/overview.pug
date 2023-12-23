@@ -1,0 +1,47 @@
+extends base
+block content
+    doctype html
+    html(lang="en")
+        head
+            meta(charset="UTF-8")
+            meta(name="viewport", content="width=device-width, initial-scale=1.0")
+            link(rel="stylesheet", href="css/card.css")
+
+        body 
+        main(class="main")
+            div(class="card-container")
+                each tour in tours
+                    div(class="card")
+                        div(class="card__header")
+                            div(class="card__picture")
+                                div(class="card__picture-overlay") 
+                                img(class="card__picture-img" src=`/img/tours/${tour.imageCover}`, alt=`${tour.name}`)
+                            h3(class="heading-tertirary")
+                                span #{tour.name}
+                        div(class="card__details")
+                            h4(class="card__sub-heading") #{tour.difficulty} #{tour.duration}-day tour  
+                            p(class="card__text") #{tour.summary}
+                                div(class="card__data")
+                                    svg(class="card__icon")
+                                        use(xlink:href="/img/icons.svg#icon-map-pin") 
+                                    span #{tour.startLocation.description}
+                                div(class="card__data")
+                                    svg(class="card__icon")
+                                        use(xlink:href='/img/icons.svg#icon-calendar') 
+                                    span #{tour.startDates[0].toLocaleString("en-us",{day: "numeric",month:"long",year:"numeric"})}
+                                div(class="card__data")
+                                    svg(class="card__icon")
+                                        use(xlink:href='/img/icons.svg#icon-flag') 
+                                    span #{tour.locations.length} stops 
+                                div(class="card__data")
+                                    svg(class="card__icon")
+                                        use(xlink:href='/img/icons.svg#icon-user') 
+                                    span #{tour.maxGroupSize} people 
+                        div(class="card__footer")
+                            p
+                                span(class="card__footer-value") $#{tour.price}
+                                span(class="card__footer-text")  per person 
+                            p(class="card__ratings")
+                                span(class="card__footer-value") #{tour.ratingsAverage}
+                                span(class="card__footer-text")  rating (#{tour.ratingsQuantity})
+                            a.btn.btn--green.btn--small(href=`/tour/${tour.slug}`) Details       

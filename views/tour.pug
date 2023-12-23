@@ -1,0 +1,37 @@
+extends base
+block content
+    doctype html
+    html(lang="en")
+        head
+            meta(charset="UTF-8")
+            meta(name="viewport", content="width=device-width, initial-scale=1.0")
+            link(rel="stylesheet", href="/css/style.css")
+
+        body 
+            section(class="section-header")
+                div(class="header__hero")
+                    div(class="header__hero-overlay") &nbsp;
+                    img(class="header__hero-img" src=`/img/tours/${tour.imageCover}`, alt=`${tour.name}`)
+                div(class="heading-box")
+                    h1(class="heading-primary")
+                        span #{tour.name} 
+                    div(class="heading-box__group")
+                        div(class="heading-box__detail")
+                            svg(class="heading-box__icon")
+                                use(xlink:href="img/icons.svg#icon-clock")
+                            span(class="heading-box__text") #{tour.duration} days
+                        div(class="heading-box__detail")
+                            svg(class="heading-box__icon")
+                                use(xlink:href="img/icons.svg#icon-clock")
+                            span(class="heading-box__text") #{tour.startLocation.description} 
+            section(class="section-description")
+                div(class="overview-box")
+                    div
+                        div(class="overview-box__group")
+                            h2(class="heading-secondary ma-bt-lg") Quick facts
+                            div(class="overview-box__detail")
+                                svg(class="overview-box__icon")
+                                    use(xlink:href="img/icons.svg#icon-calendar")
+                                span(class="overview-box__label") Next date
+                                span(class="overview-box__text") #{tour.startDates[0].toLocaleString("en-us",{year:"numeric",month:"long"})}
+
