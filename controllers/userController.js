@@ -1,6 +1,50 @@
 const { User } = require("../models/userModel");
 const { AppError } = require("../utils/appError");
 const { getAll, deleteOne, updateOne, getOne } = require("./handlerFactory");
+const multer = require("multer");
+const sharp = require("sharp");
+
+// const multerStorage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, "public/img/users");
+//   },
+//   filename: function (req, file, cb) {
+//     const extension = file.mimetype.split("/")[1];
+//     cb(null, `user-${req.user.id}-${Date.now()}.${extension}`);
+//   },
+// });
+
+const multerStorage = multer.memoryStorage();
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith("image")) {
+    cb(null, true);
+  } else {
+    cb(new AppError(400, "Not an image! Please upload only images"), false);
+  }
+};
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+
+const uploadUserPhoto = upload.single("photo");
+
+const resizeUserPhoto = (req, res, next) => {
+  console.log(req.file);
+  if (!req.file) {
+    return next();
+  } else {
+    const extension = req.file.mimetype.split("/")[1];
+
+    req.file.filename = `user-${req.user.id}-${Date.now()}.jpg`;
+
+    sharp(req.file.buffer)
+      .resize(500, 500)
+      .toFormat("jpeg")
+      .jpeg({ quality: 90 })
+      .toFile(`public/img/users/${req.file.filename}`);
+  }
+};
 
 const filterObj = (obj, ...allowedFields) => {
   const newObj = {};
@@ -39,7 +83,7 @@ const updateMe = async (req, res, next) => {
     }
     //2) Filtered out unwanted fields name that are not allowed to be updated
     const filteredBody = filterObj(req.body, "name", "email", "photo");
-
+    if (req.file) filteredBody.photo = req.file.filename;
     //3) Update user document
     const updatedUser = await User.findByIdAndUpdate(
       req.user.id,
@@ -79,6 +123,8 @@ const deleteMe = async (req, res, next) => {
 const deleteUser = deleteOne(User);
 
 module.exports = {
+  uploadUserPhoto,
+  resizeUserPhoto,
   getAllUsers,
   getUser,
   getMe,

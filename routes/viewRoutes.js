@@ -1,8 +1,20 @@
 const express = require("express");
 const router = express.Router();
-const { getOverview, getTour } = require("../controllers/viewsController");
+const {
+  getOverview,
+  getTour,
+  getAccount,
+  register,
+  login,
+  updateUserData,
+} = require("../controllers/viewsController");
+const { isLoggedIn, protect } = require("../controllers/authController");
 
-router.get("/", getOverview);
-router.get("/tour/:slug", getTour);
+router.get("/", isLoggedIn, getOverview);
+router.get("/tour/:slug", isLoggedIn, getTour);
+router.get("/register", isLoggedIn, register);
+router.get("/login", isLoggedIn, login);
+router.get("/me", protect, getAccount);
+router.post("/submit-user-data", protect, updateUserData);
 
 module.exports = router;

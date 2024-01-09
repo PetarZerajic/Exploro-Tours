@@ -1,17 +1,18 @@
 doctype html
 html(lang="en")
-    head
-        meta(charset="UTF-8")
-        meta(name="viewport", content="width=device-width, initial-scale=1.0")
-        link(rel="stylesheet", href="https://fonts.googleapis.com/css?family=Lato:300,300i,700")
-        link(rel="stylesheet", href="/css/style.css")
-        link(rel="shortcut icon", href="/img/favicon.png")
-        title Natours | #{title}
-
+  head
+    block head
+      meta(charset="UTF-8")
+      meta(name="viewport", content="width=device-width, initial-scale=1.0")
+      meta(http-equiv="Content-Security-Policy", content="script-src 'self' https://cdnjs.cloudflare.com; object-src 'self'")
+      link(rel="stylesheet", href="https://fonts.googleapis.com/css?family=Lato:300,300i,700")
+      link(rel="stylesheet", href="/css/style.css")
+      link(rel="shortcut icon", href="/img/favicon.png")
+      
+      title Natours | #{title}
     body
-        include _header.pug
-        block content
-            h1 this is a placeholder heading
-        include _footer.pug
-            
-  
+      include _header
+      block content
+      include _footer
+      script(src="/js/index.js" type="module")
+      script(src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.3/axios.min.js")

@@ -1,5 +1,7 @@
 const { Tour } = require("../models/tourModel");
+const { User } = require("../models/userModel");
 const { AppError } = require("../utils/appError");
+
 const getOverview = async (req, res, next) => {
   try {
     const tours = await Tour.find();
@@ -21,16 +23,64 @@ const getTour = async (req, res, next) => {
       fields: "review rating user",
     });
 
-    console.log(tour);
     if (!tour) {
-      return next(new AppError(404, "No tour found with that ID"));
+      return next(new AppError(404, "There is no tour with that name"));
     }
+
     res.status(200).render("tour", {
+      title: `${tour.name} Tour`,
       tour: tour,
     });
   } catch (err) {
-    console.log(err);
     next(err);
   }
 };
-module.exports = { getOverview, getTour };
+
+const register = async (req, res, next) => {
+  try {
+    res.status(200).render("register");
+  } catch (next) {}
+};
+
+const login = (req, res) => {
+  res.status(200).render("login", {
+    title: "Log into your account",
+  });
+};
+
+const getAccount = (req, res) => {
+  res.status(200).render("account", {
+    title: "Your account",
+  });
+};
+
+const updateUserData = async (req, res, next) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      {
+        name: req.body.name,
+        email: req.body.email,
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    res.status(200).render("account", {
+      title: "Your accoumt",
+      user: updatedUser,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+module.exports = {
+  getOverview,
+  getTour,
+  getAccount,
+  register,
+  login,
+  updateUserData,
+};

@@ -65,22 +65,65 @@ const logIn = async (req, res, next) => {
     next(err);
   }
 };
+const isLoggedIn = async (req, res, next) => {
+  if (req.cookies.jwt) {
+    try {
+      // 1) verify token
+      const decoded = await promisify(jwt.verify)(
+        req.cookies.jwt,
+        process.env.JWT_SECRET
+      );
+
+      // 2) Check if user still exists
+      const user = await User.findById(decoded.id);
+      if (!user) {
+        return next();
+      }
+
+      // 3) Check if user changed password after the token was issued
+      if (user.changedPasswordAfter(decoded.iat)) {
+        return next();
+      }
+
+      // THERE IS A LOGGED IN USER
+      res.locals.user = user;
+      return next();
+    } catch (err) {
+      return next(err);
+    }
+  }
+  next();
+};
+
+const logout = (req, res) => {
+  const cookieOptions = {
+    expires: new Date(Date.now() + 1 * 1000),
+    httpOnly: true,
+  };
+
+  res.cookie("jwt", "loggedout", cookieOptions);
+
+  res.status(200).json({
+    status: "success",
+  });
+};
 
 const protect = async (req, res, next) => {
   try {
     let token;
-
     if (
       req.headers.authorization &&
       req.headers.authorization.startsWith("Bearer")
     ) {
       token = req.headers.authorization.split(" ")[1];
+    } else if (req.cookies.jwt) {
+      token = req.cookies.jwt;
     }
 
     //1) Provera da li token postoji
     if (!token) {
       return next(
-        new AppError(401, "You are not loged in! Please log in to get access")
+        new AppError("You are not logged in! Please log in to get access.", 401)
       );
     }
 
@@ -89,21 +132,22 @@ const protect = async (req, res, next) => {
     const { id, iat } = decoded;
 
     // 3) Provera da li korisnik i dalje postoji
-    const user = await User.findById(id);
+    const currentUser = await User.findById(id);
 
-    if (!user) {
+    if (!currentUser) {
       return next(
         new AppError(401, "The user belonging this token does no longer exist!")
       );
     }
 
     // 4) Provera da li je korisnik promenuo lozinku nakon sto je token izdat
-    if (user.changedPasswordAfter(iat)) {
+    if (currentUser.changedPasswordAfter(iat)) {
       return next(
         new AppError(401, "User recently changed password! Please log in again")
       );
     }
-    req.user = user; //Ovde je bitno da skladistimo korisnika na request je kljucno za sledeci korak da bi radio
+    req.user = currentUser; //Ovde je bitno da skladistimo korisnika na request je kljucno za sledeci korak da bi radio
+    res.locals.user = currentUser;
     next();
   } catch (err) {
     next(err);
@@ -232,9 +276,12 @@ const updatePassword = async (req, res, next) => {
     next(err);
   }
 };
+
 module.exports = {
   register,
   logIn,
+  isLoggedIn,
+  logout,
   protect,
   restrictTo,
   forgotPasword,

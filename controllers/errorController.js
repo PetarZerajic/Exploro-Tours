@@ -30,34 +30,52 @@ const handleJWTExpiredError = () => {
   return new AppError(401, message);
 };
 
-const sendErrForDev = (err, res) => {
-  res.status(err.statusCode).json({
-    status: err.status,
-    error: err,
-    message: err.message,
-    stack: err.stack,
-  });
-};
-
-const sendErrforProd = (err, res) => {
-  //Poruka za klijenta
-  if (err.isOperational) {
+const sendErrForDev = (err, req, res) => {
+  if (req.originalUrl.startsWith("/api")) {
     res.status(err.statusCode).json({
       status: err.status,
+      error: err,
+      message: err.message,
+      stack: err.stack,
+    });
+  } else {
+    res.status(err.statusCode).render("error", {
+      title: "Something went wrong",
       message: err.message,
     });
+    console.log(err);
+  }
+};
 
-    //Programska ili druga nepoznata greska:ne zelimo da detalji procure klijentu
-    // Za nas same zelimo da detaljniju poruku o gresci
-    //Predstavlja NE operativnu gresku
+const sendErrforProd = (err, req, res) => {
+  // A) API
+  if (req.originalUrl.startsWith("/api")) {
+    if (err.isOperational) {
+      res.status(err.statusCode).json({
+        status: err.status,
+        message: err.message,
+      });
+    } else {
+      res.status(500).json({
+        status: "Error",
+        message: "Something went wrong",
+      });
+      console.log(err);
+    }
   } else {
-    // 1)Logovati gresku
-    // 2)Poslati genericku gresku
-    console.error(err);
-    res.status(500).json({
-      status: "Error",
-      message: "Something went wrong",
-    });
+    //B) Rendered Website
+    if (err.isOperational) {
+      res.status(err.statusCode).render("error", {
+        title: "Something went wrong",
+        message: err.message,
+      });
+      console.log(err);
+    } else {
+      res.status(err.statusCode).render("error", {
+        title: "Something went wrong",
+        message: "Please try again later",
+      });
+    }
   }
 };
 
@@ -66,7 +84,7 @@ const errorController = (err, req, res, next) => {
   err.status = err.status || "error"; //default vrednost koja ce biti poslata klijentu
   err.message = err.message; //default vrednost koja ce biti poslata klijentu
   if (process.env.NODE_ENV === "development") {
-    sendErrForDev(err, res);
+    sendErrForDev(err, req, res);
   } else if (process.env.NODE_ENV === "production") {
     let error = { ...err }; //Koristimo kopiju da ne bi nadjacali argumente funkcije (err)
 
@@ -75,7 +93,7 @@ const errorController = (err, req, res, next) => {
     if (err.name === "ValidationError") error = handleValidationErrorDB(error);
     if (err.name === "JsonWebTokenError") error = handleJWTError();
     if (err.name === "TokenExpiredError") error = handleJWTExpiredError();
-    sendErrforProd(error, res);
+    sendErrforProd(error, req, res);
   }
 };
 

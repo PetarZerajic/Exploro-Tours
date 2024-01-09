@@ -4,5 +4,11 @@ header(class="header")
     div(class="header__logo ")
         img(src="/img/logo-white.png", alt="Natours logo")
     nav(class="nav nav--user")
-        button(class="nav__el") Log in 
-        button(class="nav__el nav__el--cta") Sign up
+        if user
+            a(class="nav__el nav__el--logout") Log out
+            a(href="/me" class="nav__el")
+                img(class="nav__user-img" src=`/img/users/${user.photo}`, alt=`Photo of ${user.name}`)
+                span= user.name.split(" ")[0]
+        else
+            a(href="/login" class="nav__el") Log in 
+            a(href="/register" class="nav__el nav__el--cta") Sign up
