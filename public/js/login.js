@@ -1,4 +1,6 @@
+import axios from "https://cdn.jsdelivr.net/npm/axios@1.6.5/+esm";
 import { showAlert } from "./alerts.js";
+
 export const logIn = async (email, password) => {
   try {
     const response = await axios({
