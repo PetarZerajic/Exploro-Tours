@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const { promisify } = require("util");
 const { User } = require("../models/userModel");
 const { AppError } = require("../utils/appError");
-const { sendEmail } = require("../utils/email");
+const { Email } = require("../utils/email");
 const crypto = require("crypto");
 
 const signToken = (id) => {
@@ -39,6 +39,9 @@ const register = async (req, res, next) => {
       password: req.body.password,
       passwordConfirm: req.body.passwordConfirm,
     });
+
+    const url = `${req.protocol}://${req.get("host")}/me`;
+    await new Email(newUser, url).sendWelcome();
     createSendToken(newUser, 201, res);
   } catch (err) {
     next(err);
@@ -54,7 +57,7 @@ const logIn = async (req, res, next) => {
     }
     const user = await User.findOne({
       email: email,
-    }).select("+password"); //+ ovde znaci da biramo polje koje po default nije odabrano u DB.
+    }).select("+password");
 
     if (!user || !(await user.correctPassword(password, user.password))) {
       return next(new AppError(401, "Incorrect email or password"));
@@ -68,24 +71,20 @@ const logIn = async (req, res, next) => {
 const isLoggedIn = async (req, res, next) => {
   if (req.cookies.jwt) {
     try {
-      // 1) verify token
       const decoded = await promisify(jwt.verify)(
         req.cookies.jwt,
         process.env.JWT_SECRET
       );
 
-      // 2) Check if user still exists
       const user = await User.findById(decoded.id);
       if (!user) {
         return next();
       }
 
-      // 3) Check if user changed password after the token was issued
       if (user.changedPasswordAfter(decoded.iat)) {
         return next();
       }
 
-      // THERE IS A LOGGED IN USER
       res.locals.user = user;
       return next();
     } catch (err) {
@@ -120,18 +119,15 @@ const protect = async (req, res, next) => {
       token = req.cookies.jwt;
     }
 
-    //1) Provera da li token postoji
     if (!token) {
       return next(
         new AppError("You are not logged in! Please log in to get access.", 401)
       );
     }
 
-    // 2) Verifikacija tokena
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
     const { id, iat } = decoded;
 
-    // 3) Provera da li korisnik i dalje postoji
     const currentUser = await User.findById(id);
 
     if (!currentUser) {
@@ -140,13 +136,12 @@ const protect = async (req, res, next) => {
       );
     }
 
-    // 4) Provera da li je korisnik promenuo lozinku nakon sto je token izdat
     if (currentUser.changedPasswordAfter(iat)) {
       return next(
         new AppError(401, "User recently changed password! Please log in again")
       );
     }
-    req.user = currentUser; //Ovde je bitno da skladistimo korisnika na request je kljucno za sledeci korak da bi radio
+    req.user = currentUser;
     res.locals.user = currentUser;
     next();
   } catch (err) {
@@ -158,6 +153,7 @@ const restrictTo =
   (...roles) =>
   (req, res, next) => {
     // roles ['admin','lead-guide'] ✔   role="user" ✖
+
     if (!roles.includes(req.user.role)) {
       return next(
         new AppError(403, "You do not have a premission to perfom this action")
@@ -177,7 +173,6 @@ const forgotPasword = async (req, res, next) => {
     const resetToken = user.createPasswordResetToken();
     await user.save({ validateBeforeSave: false });
 
-    //Saljemo NEKRIPTOVAN token u url adresu
     const resetURL = `${req.protocol}://${req.get(
       "host"
     )}/api/v1/users/resetPassword/${resetToken}`;
@@ -185,12 +180,6 @@ const forgotPasword = async (req, res, next) => {
     const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forgot your password,please ignore this email.`;
 
     try {
-      await sendEmail({
-        email: req.body.email,
-        subject: "Your password reset token (valid for 15 min)",
-        message: message,
-      });
-
       res.status(200).json({
         status: "success",
         message: "Token sent to email!",
@@ -216,14 +205,11 @@ const forgotPasword = async (req, res, next) => {
 
 const resetPassword = async (req, res, next) => {
   try {
-    // 1) Get user based on the token
-    //Sifrovati token(originalan token koji je hex dec) i uporediti sa sifrovanim u bazi podataka
     const hashedToken = crypto
       .createHash("sha256")
       .update(req.params.token)
       .digest("hex");
 
-    //Mozemo pronaci korisnika na osnovu tokena i takodje proverimo da li token jos nije istekao
     const user = await User.findOne({
       passwordResetToken: hashedToken,
       passwordResetExpires: {
@@ -231,20 +217,15 @@ const resetPassword = async (req, res, next) => {
       },
     });
 
-    // 2) If token has not expired,and there is user,set the new password
     if (!user) {
       return next(new AppError(400, "Token is invalid or has expired!"));
     }
-    user.password = req.body.password; //Na ovaj nacin ce da postavimo nove podatek u BP
+    user.password = req.body.password;
     user.passwordConfirm = req.body.passwordConfirm;
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;
-    await user.save(); //U ovom slucaju zelimo validatore tj ne iskljucujemo ih jer zelimo da se sifre potvrde
+    await user.save();
 
-    // 3) Update changedPasswordAt property for the user
-    // user.passwordChangedAt = req.body.passwordChangedAt;
-
-    // 4) Log the user in ,send JWT
     createSendToken(user, 200, res);
 
     next();
@@ -255,21 +236,17 @@ const resetPassword = async (req, res, next) => {
 
 const updatePassword = async (req, res, next) => {
   try {
-    // 1) Get user from collection
     const { password, passwordCurrent, passwordConfirm } = req.body;
     const user = await User.findById(req.user.id).select("+password");
-    // 2) Check if POSTED current password is correct
+
     if (!(await user.correctPassword(passwordCurrent, user.password))) {
       return next(new AppError(401, "You are current password is wrong"));
     }
 
-    // 3)If so,update password
-    // user.findByIdAndUpdate() nece raditi onako kako je predvidjeno (pogledaj model za passwordConfirm)
     user.password = password;
     user.passwordConfirm = passwordConfirm;
 
     await user.save();
-    // 4)Log user in,send JWT
 
     createSendToken(user, 200, res);
   } catch (err) {
