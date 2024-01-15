@@ -62,25 +62,16 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-//pre("save") funkcija ce se pokrenuti pre nego sto se novi dokument sacuva
 userSchema.pre("save", function (next) {
   if (!this.isModified("password") || this.isNew) return next();
 
-  this.passwordChangedAt = Date.now() - 1000; //stavljanje 1 sekunde manje ce osigurati da se token uvek
-  // kreira( signToken(user._id) za resetPassword) nakon sto je lozinka promenjna.
-  //Razlog je to sto se podaci u bazi podataka sporije sacuvavaju nego izdavanje JWT-a.
-  // Ako se desi da vremenska oznaka postavi posle kreiranja JWT-a korisnik NECE moci da se prijavi pomocu
-  // novog tokena .
+  this.passwordChangedAt = Date.now() - 1000;
   next();
 });
 userSchema.pre(/^find/, function (next) {
-  this.find({ active: { $ne: false } }); //Da smo postavili eq:true ne bi bilo rezultata.
-  //Zato sto ostali korisnici nemoju svojstvu za active postavljeno na true
+  this.find({ active: { $ne: false } });
   next();
 });
-//Ne mozemo koristit this jer smo password objektu porsledili select: false .Stoga moramo koristiti ovaj pristup
-//Ovo funkcija predstavlja instancu metoda(methods) ,stoga bice dostupna svim user dokumentima.
-//Cilj je uporediti sifre i vratiti true ili false
 
 userSchema.methods.correctPassword = async function (
   reqBodyPassword,
@@ -91,28 +82,22 @@ userSchema.methods.correctPassword = async function (
 
 userSchema.methods.changedPasswordAfter = function (jwtIssuedAt) {
   if (this.passwordChangedAt) {
-    const changedTimestamp = +this.passwordChangedAt.getTime() / 1000; //Zelimo sekunde
+    const changedTimestamp = +this.passwordChangedAt.getTime() / 1000;
 
     return jwtIssuedAt < changedTimestamp; // 100 < 200
-  } //pr:Token je izdat u vermenu 100 a onda smo promenili lozinku u trenutku 200 tj lozinku nakon sto je token
-  //izdat.Stoga ovo je true
+  }
 
-  //False znaci da nije promenjeno
   return false;
 };
 
 userSchema.methods.createPasswordResetToken = function () {
-  //Ovaj token cemo poslati korsniku i to je kao resetovanje lozinke koju korisnik tada moze koristiti
-  //za kreiranje nove prave lozinke.Samo ce korisnik imati pristup ovoj lozinki
-
   const resetToken = crypto.randomBytes(32).toString("hex");
   this.passwordResetToken = crypto
     .createHash("sha256")
     .update(resetToken)
     .digest("hex");
 
-  console.log({ resetToken }, this.passwordResetToken);
-  this.passwordResetExpires = Date.now() + 15 * 60 * 1000; //token istice za 10 min (kao mera sigurnosti)
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 
   return resetToken;
 };
