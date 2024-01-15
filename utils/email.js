@@ -7,13 +7,18 @@ class Email {
     this.to = user.email;
     this.firstName = user.name.split(" ")[0];
     this.url = url;
-    this.from = `Cody Bell <${process.env.EMAIL_FROM}>`;
+    this.from = `Peter <${process.env.EMAIL_FROM}>`;
   }
   newTransport() {
     if (process.env.NODE_ENV === "production") {
-      //Sendgrid
+      return nodemailer.createTransport({
+        service: "SendGrid",
+        auth: {
+          user: process.env.SENDGRID_USERNAME,
+          pass: process.env.SENDGRID_PASSWORD,
+        },
+      });
     }
-
     return nodemailer.createTransport({
       port: process.env.EMAIL_PORT,
       host: process.env.EMAIL_HOST,
