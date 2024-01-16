@@ -14,18 +14,14 @@ const tourRouter = require("./routes/tourRoutes");
 const userRouter = require("./routes/userRoutes");
 const reviewRouter = require("./routes/reviewRoutes");
 const viewRouter = require("./routes/viewRoutes");
-
+const bookingRouter = require("./routes/bookingRoutes");
 const app = express();
 
 app.set("view engine", "pug");
 app.set("views", path.join(__dirname, "views"));
 
-// 1) Global Middleware
-
-//Serving static files
 app.use(express.static(path.join(__dirname, "public")));
 
-//Set security HTTP headers
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -37,32 +33,25 @@ app.use(
   })
 );
 
-//Development logging
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
-//Limit request from same API
 const limiter = rateLimit({
   max: 100,
-  windowMs: 60 * 60 * 1000, //1 sat
+  windowMs: 60 * 60 * 1000,
   message: "Too many request from this IP.Please try again in an hour!",
 });
 
 app.use("/api", limiter);
-//Use nam omogucava da dodamo novu middleware funkciju.app.use ce biti izvrsen za svaki nadolazeci zahtev
 
-//Body Parser,reading data from the Body into req.body
 app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 app.use(cookieParser());
-//Data sanitization against NoSQL query injection
 app.use(mongoSanitize());
 
-//Data sanitization against XSS
 app.use(xss());
 
-//Prevent parameter polution
 app.use(
   hpp({
     whitelist: [
@@ -76,27 +65,23 @@ app.use(
   })
 );
 
-//Test middleware
 app.use((req, res, next) => {
   req.requestTime = new Date().toLocaleDateString();
   next();
 });
 
-//Routes
-
 app.use("/", viewRouter);
 app.use("/api/v1/tours", tourRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/reviews", reviewRouter);
+app.use("/api/v1/bookings", bookingRouter);
 
-//* znaci sve
 app.all("*", (req, res, next) => {
   const errMessage = `Can't find ${req.originalUrl} on this server`;
 
   next(new AppError(404, errMessage));
 });
 
-//Error-handling middleware functions
 app.use(errorController);
 
 module.exports = app;
