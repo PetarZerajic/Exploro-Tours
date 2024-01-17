@@ -27,7 +27,12 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "https://cdn.jsdelivr.net"],
+        scriptSrc: [
+          "'self'",
+          "https://cdn.jsdelivr.net",
+          "https://js.stripe.com",
+        ],
+        frameSrc: ["'self'", "https://js.stripe.com"],
       },
     },
   })

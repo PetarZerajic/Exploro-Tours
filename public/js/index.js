@@ -1,11 +1,13 @@
 import { logIn } from "./login.js";
 import { logout } from "./logout.js";
 import { updateSettings } from "./updateSettings.js";
+import { bookTour } from "./stripe.js";
 
 const loginForm = document.querySelector(".form--login");
 const logoutBtn = document.querySelector(".nav__el--logout");
 const userDataForm = document.querySelector(".form-user-data"); //account.pug
 const userPasswordForm = document.querySelector(".form-user-password");
+const bookButn = document.getElementById("book-tour");
 
 if (loginForm) {
   loginForm.addEventListener("submit", (event) => {
@@ -59,5 +61,13 @@ if (userPasswordForm) {
     document.getElementById("password-current").value = "";
     document.getElementById("password").value = "";
     document.getElementById("password-confirm").value = "";
+  });
+}
+
+if (bookButn) {
+  bookButn.addEventListener("click", async (event) => {
+    event.target.textContent = "Processing...";
+    const tourId = event.target.dataset.tourId;
+    await bookTour(tourId);
   });
 }

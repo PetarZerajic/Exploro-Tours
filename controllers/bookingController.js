@@ -1,7 +1,7 @@
 const { Tour } = require("../models/tourModel");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
-const getCheckoutSeassion = async (req, res, next) => {
+const getCheckoutSession = async (req, res, next) => {
   try {
     const tour = await Tour.findById(req.params.tourId);
     const session = await stripe.checkout.sessions.create({
@@ -18,7 +18,7 @@ const getCheckoutSeassion = async (req, res, next) => {
             product_data: {
               name: tour.name,
               description: tour.summary,
-              images: [`https://www.natours.dev/img/tours/${tour.imageCover}`],
+              images: [`${process.env.STRIPE_IMAGES_URL}/${tour.imageCover}`],
             },
             unit_amount: tour.price * 100,
           },
@@ -36,4 +36,4 @@ const getCheckoutSeassion = async (req, res, next) => {
   }
 };
 
-module.exports = { getCheckoutSeassion };
+module.exports = { getCheckoutSession };

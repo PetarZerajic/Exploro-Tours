@@ -85,4 +85,7 @@ block content
                     div(class="cta__content")
                         h2(class="heading-secondary") What are you waiting for?
                         p(class="cta__text") 10 days. 1 adventure. Infinite memories. Make it yours today!
-                        button(class="btn btn--green span-all-rows") Book tour now!
+                        if(user)
+                            button(id="book-tour" data-tour-id=`${tour.id}`  class="btn btn--green span-all-rows") Book tour now!
+                        else 
+                            a(class="btn btn--green span-all-rows" href="/login") Log in to book tour
