@@ -1,5 +1,12 @@
 const { Tour } = require("../models/tourModel");
 const { Booking } = require("../models/bookingModel");
+const {
+  getAll,
+  getOne,
+  createOne,
+  updateOne,
+  deleteOne,
+} = require("./handlerFactory");
 
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
@@ -57,4 +64,19 @@ const createBookingCheckout = async (req, res, next) => {
     next(err);
   }
 };
-module.exports = { getCheckoutSession, createBookingCheckout };
+
+const getAllBokings = getAll(Booking);
+const getBooking = getOne(Booking);
+const createBooking = createOne(Booking);
+const updateBooking = updateOne(Booking);
+const deleteBooking = deleteOne(Booking);
+
+module.exports = {
+  createBookingCheckout,
+  getCheckoutSession,
+  getAllBokings,
+  getBooking,
+  createBooking,
+  updateBooking,
+  deleteBooking,
+};
