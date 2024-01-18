@@ -1,5 +1,6 @@
 const { Tour } = require("../models/tourModel");
 const { User } = require("../models/userModel");
+const { Booking } = require("../models/bookingModel");
 const { AppError } = require("../utils/appError");
 
 const getOverview = async (req, res, next) => {
@@ -14,9 +15,6 @@ const getOverview = async (req, res, next) => {
 };
 
 const getTour = async (req, res, next) => {
-  // 1) Get the data ,for the request tour(including reviews and guides)
-
-  //2) Build the template
   try {
     const tour = await Tour.findOne({ slug: req.params.slug }).populate({
       path: "reviews",
@@ -36,6 +34,26 @@ const getTour = async (req, res, next) => {
   }
 };
 
+const getAccount = (req, res) => {
+  res.status(200).render("account", {
+    title: "Your account",
+  });
+};
+const getMyBookings = async (req, res, next) => {
+  try {
+    const bookings = await Booking.find({ user: req.user.id });
+    const tourIds = bookings.map((item) => item.tour.id);
+    const tours = await Tour.find({ _id: { $in: tourIds } });
+
+    res.status(200).render("overview", {
+      title: "My bookings",
+      tours,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 const register = async (req, res, next) => {
   try {
     res.status(200).render("register");
@@ -45,12 +63,6 @@ const register = async (req, res, next) => {
 const login = (req, res) => {
   res.status(200).render("login", {
     title: "Log into your account",
-  });
-};
-
-const getAccount = (req, res) => {
-  res.status(200).render("account", {
-    title: "Your account",
   });
 };
 
@@ -76,10 +88,12 @@ const updateUserData = async (req, res, next) => {
     next(err);
   }
 };
+
 module.exports = {
   getOverview,
   getTour,
   getAccount,
+  getMyBookings,
   register,
   login,
   updateUserData,

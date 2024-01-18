@@ -4,6 +4,7 @@ const {
   getOverview,
   getTour,
   getAccount,
+  getMyBookings,
   register,
   login,
   updateUserData,
@@ -16,6 +17,8 @@ router.get("/tour/:slug", isLoggedIn, getTour);
 router.get("/register", isLoggedIn, register);
 router.get("/login", isLoggedIn, login);
 router.get("/me", protect, getAccount);
+router.get("/my-bookings", protect, getMyBookings);
+
 router.post("/submit-user-data", protect, updateUserData);
 
 module.exports = router;
