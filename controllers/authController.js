@@ -152,8 +152,6 @@ const protect = async (req, res, next) => {
 const restrictTo =
   (...roles) =>
   (req, res, next) => {
-    // roles ['admin','lead-guide'] ✔   role="user" ✖
-
     if (!roles.includes(req.user.role)) {
       return next(
         new AppError(403, "You do not have a premission to perfom this action")
