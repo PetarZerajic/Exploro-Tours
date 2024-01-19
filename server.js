@@ -31,9 +31,7 @@ const server = app.listen(port, () => {
 
 process.on("unhandledRejection", (error) => {
   console.log(error);
-  //Graceful Shutdown
-  //Prvo zatvaramo server pa tek onda gasimo aplikaciju.
   server.close(() => {
-    process.exit(1); //0 znači završiti proces bez ikakvog kvara, a 1 znači završiti proces s nekim neuspjehom.
+    process.exit(1);
   });
 });
