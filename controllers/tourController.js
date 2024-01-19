@@ -82,7 +82,6 @@ const updateTour = updateOne(Tour);
 
 const deleteTour = deleteOne(Tour);
 
-//Agregacija
 const getTourStats = async (req, res, next) => {
   try {
     const stats = await Tour.aggregate([
@@ -125,8 +124,6 @@ const getTourStats = async (req, res, next) => {
   }
 };
 
-//Agregacija
-//Predstavlja najprometniju turu
 const getMonthlyPlan = async (req, res, next) => {
   try {
     const year = +req.params.year; //2022
@@ -169,8 +166,6 @@ const getMonthlyPlan = async (req, res, next) => {
 };
 
 const getToursWithin = async (req, res, next) => {
-  // 34.072061, -118.212609
-
   try {
     const { distance, latlng, unit } = req.params;
     const radius = unit === "mi" ? distance / 3963.2 : distance / 6378.1;
@@ -220,15 +215,13 @@ const getDistances = async (req, res, next) => {
 
     const distances = await Tour.aggregate([
       {
-        // Ispisuje dokumente u redosledu od najbližeg prema najdalje od određene tačke
         $geoNear: {
           near: {
-            //Tacka za pronalazenje najblizeg dokumenta
             type: "Point",
             coordinates: [+lng, +lat],
           },
           distanceField: "distance",
-          distanceMultiplier: multiplier, //Zelimo km ili milje
+          distanceMultiplier: multiplier,
         },
       },
       {
