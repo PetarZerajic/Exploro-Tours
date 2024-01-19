@@ -48,7 +48,6 @@ const sendErrForDev = (err, req, res) => {
 };
 
 const sendErrforProd = (err, req, res) => {
-  // A) API
   if (req.originalUrl.startsWith("/api")) {
     if (err.isOperational) {
       res.status(err.statusCode).json({
@@ -63,7 +62,6 @@ const sendErrforProd = (err, req, res) => {
       console.log(err);
     }
   } else {
-    //B) Rendered Website
     if (err.isOperational) {
       res.status(err.statusCode).render("error", {
         title: "Something went wrong",
@@ -80,13 +78,13 @@ const sendErrforProd = (err, req, res) => {
 };
 
 const errorController = (err, req, res, next) => {
-  err.statusCode = err.statusCode || 500; //default vrednost koja ce biti poslata klijentu
-  err.status = err.status || "error"; //default vrednost koja ce biti poslata klijentu
-  err.message = err.message; //default vrednost koja ce biti poslata klijentu
+  err.statusCode = err.statusCode || 500;
+  err.status = err.status || "error";
+  err.message = err.message;
   if (process.env.NODE_ENV === "development") {
     sendErrForDev(err, req, res);
   } else if (process.env.NODE_ENV === "production") {
-    let error = { ...err }; //Koristimo kopiju da ne bi nadjacali argumente funkcije (err)
+    let error = { ...err };
 
     if (err.name === "CastError") error = handleCastErrorDB(error);
     if (err.code === 11000) error = handleDuplicateFieldsDB(error);
