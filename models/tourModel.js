@@ -23,7 +23,6 @@ const tourSchema = new mongoose.Schema(
     difficulty: {
       type: String,
       required: [true, "A tour must have a difficulty"],
-      //enum vazi samo za stringove
       enum: {
         values: ["easy", "medium", "difficult"],
         message:
@@ -35,7 +34,7 @@ const tourSchema = new mongoose.Schema(
       default: 4.5,
       min: [1, "Rating must be above 1.0 "],
       max: [5, "Rating must be below 5.0"],
-      set: (val) => Math.round(val * 10) / 10, //4.66 ,46.66 ~~ 47/10=4.7
+      set: (val) => Math.round(val * 10) / 10,
     },
     ratingsQuantity: {
       type: Number,
@@ -49,7 +48,6 @@ const tourSchema = new mongoose.Schema(
       type: Number,
       validate: {
         validator: function (value) {
-          //this ce raditi samo trenutnim dokumentom kada ga budemo kreirali (nece raditi za azuriranje)
           return value < this.price;
         },
         message: "Discount price {VALUE} should be below regular price",
@@ -80,7 +78,6 @@ const tourSchema = new mongoose.Schema(
       default: false,
     },
     startLocation: {
-      //GeoJSON
       type: {
         type: String,
         default: "Point",
@@ -104,12 +101,6 @@ const tourSchema = new mongoose.Schema(
       },
     ],
     guides: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    // reviews: [
-    //   {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref:"Review"
-    //   },
-    // ],
   },
   {
     toJSON: {
@@ -128,28 +119,16 @@ tourSchema.virtual("durationWeeks").get(function () {
   return this.duration / 7;
 });
 
-//Uz pomoc virtual svojstva popunjavamo ture recenzijama.Dobijamo pristup na sve recenzije za odredjenu turu.
-//Ali bez zadrzavanja niza ID-ova na turama u bazi podataka.Ovo ce resiti problem beskonacnog dodavanja id-ova
-// u nizu recenzija (pr: reviews niz gore).Child reference
 tourSchema.virtual("reviews", {
   ref: "Review",
   foreignField: "tour",
   localField: "_id",
 });
-//Document Middleware:pokrece se pre .save() naredbe i posle create() naredbe.Nece raditi za update
 
 tourSchema.pre("save", function (next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
-
-//QUERY MIDDLEWARE
-
-// tourSchema.pre("save", async function (next) {
-//   const guidesPromisses = this.guides.map((id) => User.findById(id));
-//   this.guides = await Promise.all(guidesPromisses);
-//   next();
-// });
 
 tourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } });
@@ -157,27 +136,11 @@ tourSchema.pre(/^find/, function (next) {
   next();
 });
 
-//populate fukcnija pravi novi query i to moze uticati na performans
 tourSchema.pre(/^find/, function (next) {
   this.populate({ path: "guides", select: "-__v -passwordChangedAt" });
 
   next();
 });
-
-// tourSchema.post(/^find/, function (docs, next) {
-//   // console.log(`Query took ${Date.now() - this.start} milliseconds`);
-//   // console.log(docs);
-//   next();
-// });
-// tourSchema.pre("aggregate", function (next) {
-//   this.pipeline().unshift({
-//     $match: {
-//       secretTour: { $ne: true },
-//     },
-//   });
-//   console.log(this.pipeline());
-//   next();
-// });
 
 const Tour = mongoose.model("Tour", tourSchema);
 
