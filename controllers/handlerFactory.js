@@ -16,7 +16,6 @@ const createOne = (Model) => async (req, res, next) => {
 
 const getAll = (Model) => async (req, res, next) => {
   try {
-    //To allow for nested GET reviews on tour (hack)
     let filterObj = {};
     const { tourId } = req.params;
     if (tourId) filterObj = { tour: tourId };
