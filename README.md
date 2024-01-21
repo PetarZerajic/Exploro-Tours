@@ -10,11 +10,11 @@ Exploro-Tours is a web application that displays and sells tours to its users.
 
 ### Express (Node.js Framework)
 
-- Utilizes the Express framework to handle routing, middleware, and seamless response management.
+- Utilizes the Express framework to handle routing, middleware, and sneding responses.
 
 ### RESTful API Design and Development
 
-- Implements a RESTful API, empowering advanced features like filtering, sorting, aliasing, and seamless pagination.
+- Implementation of RESTful API,advanced features like filtering, sorting, aliasing, and pagination.
 
 ### Server-Side Rendering with Pug Templates
 
