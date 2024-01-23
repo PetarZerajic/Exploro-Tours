@@ -15,7 +15,6 @@ const userRouter = require("./routes/userRoutes");
 const reviewRouter = require("./routes/reviewRoutes");
 const viewRouter = require("./routes/viewRoutes");
 const bookingRouter = require("./routes/bookingRoutes");
-const { stat } = require("fs");
 const app = express();
 
 app.set("view engine", "pug");
@@ -23,7 +22,7 @@ app.set("views", path.join(__dirname, "views"));
 
 app.use(
   express.static(path.join(__dirname, "public"), {
-    setHeaders: (res, path, stat) => {
+    setHeaders: (res, path) => {
       if (path.endsWith(".css")) {
         res.setHeader("Content-Type", "text/css");
       }
