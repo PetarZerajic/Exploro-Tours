@@ -19,73 +19,73 @@ mixin reviewCard(review)
                 svg(class=`reviews__star reviews__star--${review.rating >= star ? "active" : "inactive"}`)
                     use(xlink:href="/img/icons.svg#icon-star")
 
-                    
+
 block content
-         body 
-            section(class="section-header")
-                div(class="header__hero")
-                    div(class="header__hero-overlay") &nbsp;
-                    img(class="header__hero-img" src=`/img/tours/${tour.imageCover}`, alt=`${tour.name}`)
-                div(class="heading-box")
-                    h1(class="heading-primary")
-                        span #{tour.name} 
-                    div(class="heading-box__group")
-                        div(class="heading-box__detail")
-                            svg(class="heading-box__icon")
-                                use(xlink:href="/img/icons.svg#icon-clock")
-                            span(class="heading-box__text") #{tour.duration} days
-                        div(class="heading-box__detail")
-                            svg(class="heading-box__icon")
-                                use(xlink:href="/img/icons.svg#icon-clock")
-                            span(class="heading-box__text") #{tour.startLocation.description} 
-            section(class="section-description")
-                div(class="overview-box")
-                    div
-                        div(class="overview-box__group")
-                            h2(class="heading-secondary ma-bt-lg") Quick facts
-                            -const date=tour.startDates[0].toLocaleString("en-us",{year:"numeric",month:"long"})
-                            +overviewBox("calendar","Next Date", date)
-                            +overviewBox("trending-up","Difficulty", tour.difficulty)
-                            +overviewBox("user","Participants",`${tour.maxGroupSize} people`)
-                            +overviewBox("trending-up","Difficulty",`${tour.ratingsAverage}/5`)
+    body 
+        section(class="section-header")
+            div(class="header__hero")
+                div(class="header__hero-overlay") &nbsp;
+                img(class="header__hero-img" src=`/img/tours/${tour.imageCover}`, alt=`${tour.name}`)
+            div(class="heading-box")
+                h1(class="heading-primary")
+                    span #{tour.name} 
+                div(class="heading-box__group")
+                    div(class="heading-box__detail")
+                        svg(class="heading-box__icon")
+                            use(xlink:href="/img/icons.svg#icon-clock")
+                        span(class="heading-box__text") #{tour.duration} days
+                    div(class="heading-box__detail")
+                        svg(class="heading-box__icon")
+                            use(xlink:href="/img/icons.svg#icon-clock")
+                        span(class="heading-box__text") #{tour.startLocation.description} 
+        section(class="section-description")
+            div(class="overview-box")
+                div
+                    div(class="overview-box__group")
+                        h2(class="heading-secondary ma-bt-lg") Quick facts
+                        -const date=tour.startDates[0].toLocaleString("en-us",{year:"numeric",month:"long"})
+                        +overviewBox("calendar","Next Date", date)
+                        +overviewBox("trending-up","Difficulty", tour.difficulty)
+                        +overviewBox("user","Participants",`${tour.maxGroupSize} people`)
+                        +overviewBox("trending-up","Difficulty",`${tour.ratingsAverage}/5`)
 
 
-                        div(class="overview-box__group")
-                            h2(class="heading-secondary ma-bt-lg") Your tour guides
-                            each guide in tour.guides
-                                div(class="overview-box__detail")
-                                    img(class="overview-box__img" src=`/img/users/${guide.photo}`, alt=`${tour.role}`)
-                                    
-                                    -if(guide.role==="lead-guide")
-                                    span(class="overview-box__label") Lead Guide
-                                    
-                                    -if(guide.role==="guide")
-                                    span(class="overview-box__label") #{guide.name}
-                div(class="description-box")
-                    h2(class="heading-secondary ma-bt-lg") About the #{tour.name} tour
-                    -const paragraph= tour.description.split("\n")                 
-                    p(class="description__text")= paragraph[0]
-                    p(class="description__text")=paragraph[1]
+                    div(class="overview-box__group")
+                        h2(class="heading-secondary ma-bt-lg") Your tour guides
+                        each guide in tour.guides
+                            div(class="overview-box__detail")
+                                img(class="overview-box__img" src=`/img/users/${guide.photo}`, alt=`${tour.role}`)
 
-            section(class="section-pictures")  
-                each img, index in tour.images
-                    div(class="picture-box")
-                        img( class=`picture-box__img picture-box__img--${index + 1}` src=`/img/tours/${img}`, alt="")
-            
-            section(class="section-reviews")
-                div(class="reviews")
-                    each review in tour.reviews
-                        +reviewCard(review)
-            section(class="section-cta")
-                div(class="cta")
-                    div(class="cta__img cta__img--logo")
-                        img(src='/img/logo-white.png', alt='Exploro-Tours logo')
-                    img(class="cta__img cta__img--1" src=`/img/tours/${tour.images[0]}`, alt='')
-                    img(class="cta__img cta__img--2" src=`/img/tours/${tour.images[1]}`, alt='')
-                    div(class="cta__content")
-                        h2(class="heading-secondary") What are you waiting for?
-                        p(class="cta__text") 10 days. 1 adventure. Infinite memories. Make it yours today!
-                        if(user)
-                            button(id="book-tour" data-tour-id=`${tour.id}`  class="btn btn--green span-all-rows") Book tour now!
-                        else 
-                            a(class="btn btn--green span-all-rows" href="/login") Log in to book tour
+                                -if(guide.role==="lead-guide")
+                                span(class="overview-box__label") Lead Guide
+
+                                -if(guide.role==="guide")
+                                span(class="overview-box__label") #{guide.name}
+            div(class="description-box")
+                h2(class="heading-secondary ma-bt-lg") About the #{tour.name} tour
+                -const paragraph= tour.description.split("\n")                 
+                p(class="description__text")= paragraph[0]
+                p(class="description__text")=paragraph[1]
+
+        section(class="section-pictures")  
+            each img, index in tour.images
+                div(class="picture-box")
+                    img( class=`picture-box__img picture-box__img--${index + 1}` src=`/img/tours/${img}`, alt="")
+
+        section(class="section-reviews")
+            div(class="reviews")
+                each review in tour.reviews
+                    +reviewCard(review)
+        section(class="section-cta")
+            div(class="cta")
+                div(class="cta__img cta__img--logo")
+                    img(src='/img/logo-white.png', alt='Exploro-Tours logo')
+                img(class="cta__img cta__img--1" src=`/img/tours/${tour.images[0]}`, alt='')
+                img(class="cta__img cta__img--2" src=`/img/tours/${tour.images[1]}`, alt='')
+                div(class="cta__content")
+                    h2(class="heading-secondary") What are you waiting for?
+                    p(class="cta__text") 10 days. 1 adventure. Infinite memories. Make it yours today!
+                    if(user)
+                        button(id="book-tour" data-tour-id=`${tour.id}`  class="btn btn--green span-all-rows") Book tour now!
+                    else 
+                        a(class="btn btn--green span-all-rows" href="/login") Log in to book tour
