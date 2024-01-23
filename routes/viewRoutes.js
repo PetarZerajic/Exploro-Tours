@@ -14,8 +14,8 @@ const { isLoggedIn, protect } = require("../controllers/authController");
 
 router.get("/", createBookingCheckout, isLoggedIn, getOverview);
 router.get("/tour/:slug", isLoggedIn, getTour);
-router.get("/register", isLoggedIn, register);
-router.get("/login", isLoggedIn, login);
+router.get("/register", register);
+router.get("/login", login);
 router.get("/me", protect, getAccount);
 router.get("/my-bookings", protect, getMyBookings);
 

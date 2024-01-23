@@ -6,9 +6,10 @@ const { AppError } = require("../utils/appError");
 const getOverview = async (req, res, next) => {
   try {
     const tours = await Tour.find();
-    res
-      .status(200)
-      .render("overview", { tour: "The Forest Hiker", tours: tours });
+    res.status(200).render("overview", {
+      tour: "The Forest Hiker",
+      tours: tours,
+    });
   } catch (err) {
     next(err);
   }
@@ -54,10 +55,10 @@ const getMyBookings = async (req, res, next) => {
   }
 };
 
-const register = async (req, res, next) => {
-  try {
-    res.status(200).render("register");
-  } catch (next) {}
+const register = (req, res, next) => {
+  res.status(201).render("register", {
+    title: "Create a register account",
+  });
 };
 
 const login = (req, res) => {
@@ -81,7 +82,7 @@ const updateUserData = async (req, res, next) => {
     );
 
     res.status(200).render("account", {
-      title: "Your accoumt",
+      title: "Your account",
       user: updatedUser,
     });
   } catch (err) {

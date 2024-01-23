@@ -85,6 +85,7 @@ const isLoggedIn = async (req, res, next) => {
         return next();
       }
 
+      //  login template will get access
       res.locals.user = user;
       return next();
     } catch (err) {
