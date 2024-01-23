@@ -1,21 +1,33 @@
+import { register } from "./register.js";
 import { logIn } from "./login.js";
 import { logout } from "./logout.js";
 import { updateSettings } from "./updateSettings.js";
 import { bookTour } from "./stripe.js";
 
+const regForm = document.querySelector(".form--register");
 const loginForm = document.querySelector(".form--login");
 const logoutBtn = document.querySelector(".nav__el--logout");
 const userDataForm = document.querySelector(".form-user-data");
 const userPasswordForm = document.querySelector(".form-user-password");
 const bookButn = document.getElementById("book-tour");
 
+if (regForm) {
+  regForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const fullname = document.getElementById("fullname").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const passwordConfirm = document.getElementById("passwordConfirm").value;
+
+    register(fullname, email, password, passwordConfirm);
+  });
+}
 if (loginForm) {
   loginForm.addEventListener("submit", (event) => {
     event.preventDefault();
 
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
-
     logIn(email, password);
   });
 }
