@@ -43,6 +43,8 @@ block content
                 div
                     div(class="overview-box__group")
                         h2(class="heading-secondary ma-bt-lg") Quick facts
+
+
                         -const date=tour.startDates[0].toLocaleString("en-us",{year:"numeric",month:"long"})
                         +overviewBox("calendar","Next Date", date)
                         +overviewBox("trending-up","Difficulty", tour.difficulty)
@@ -52,6 +54,8 @@ block content
 
                     div(class="overview-box__group")
                         h2(class="heading-secondary ma-bt-lg") Your tour guides
+
+                        
                         each guide in tour.guides
                             div(class="overview-box__detail")
                                 img(class="overview-box__img" src=`/img/users/${guide.photo}`, alt=`${tour.role}`)
@@ -64,8 +68,8 @@ block content
             div(class="description-box")
                 h2(class="heading-secondary ma-bt-lg") About the #{tour.name} tour
                 -const paragraph= tour.description.split("\n")                 
-                p(class="description__text")= paragraph[0]
-                p(class="description__text")=paragraph[1]
+                    p(class="description__text")= paragraph[0]
+                    p(class="description__text")=paragraph[1]
 
         section(class="section-pictures")  
             each img, index in tour.images
